@@ -92,4 +92,4 @@ A:
 *   `utils/`: Script pendukung (Custom HTML Reporter).
 
 ---
-*Dibuat oleh: Hafizh - Performance Testing Team*
+*Dibuat oleh: Hafizh - QA*
