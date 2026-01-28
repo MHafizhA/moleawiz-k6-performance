@@ -6,8 +6,20 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
+import { SharedArray } from 'k6/data';
 import { customHtmlReport } from "../../utils/custom-html-report.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
+
+// 1. ENVIRONMENT VARIABLES
+// Default to staging if not provided via -e BASE_URL=...
+const BASE_URL_WEB = __ENV.BASE_URL_WEB || 'https://moleawiz-web-staging.digimasia.com';
+const BASE_URL_API = __ENV.BASE_URL_API || 'https://lbs-staging.digimasia.com/api/public/index.php';
+
+// 2. DATA DRIVEN TESTING
+// Load users from JSON file efficiently
+const users = new SharedArray('users', function () {
+  return JSON.parse(open('../../data/users.json'));
+});
 
 const errorRate = new Rate('errors');
 const webLoadTime = new Trend('web_load_time');
@@ -29,15 +41,13 @@ export const options = {
     'web_load_time': ['p(95)<2500'],
     'login_duration': ['p(95)<1500'],
   },
-  // This option ensures that the test returns a success exit code (0)
-  // even if thresholds fail. This is crucial for npm's `posttest` script to run.
   throw: false,
 };
 
 export default function() {
   // Group 1: Web Page Access
   group('Web Homepage Access', function() {
-    const webResponse = http.get('https://moleawiz-web-staging.digimasia.com/', {
+    const webResponse = http.get(`${BASE_URL_WEB}/`, {
       tags: { name: 'WebHomepage' },
     });
 
@@ -56,11 +66,14 @@ export default function() {
     sleep(1);
   });
 
-  // Group 2: Login Flow with Real Credentials
+  // Group 2: Login Flow with Dynamic Users
   group('User Login', function() {
+    // Pick a random user from the list
+    const user = users[Math.floor(Math.random() * users.length)];
+
     const loginPayload = JSON.stringify({
-      email: 'hafizh@digimasia.com',
-      password: '12345'
+      email: user.username, // Using username from JSON (assuming it's email or username field)
+      password: user.password
     });
 
     const loginParams = {
@@ -72,7 +85,7 @@ export default function() {
     };
 
     const loginResponse = http.post(
-      'https://lbs-staging.digimasia.com/api/public/index.php/login',
+      `${BASE_URL_API}/login`,
       loginPayload,
       loginParams
     );
@@ -107,6 +120,8 @@ export default function() {
 
     if (!loginCheckResult) {
       errorRate.add(1);
+      // Optional: Log which user failed
+      // console.log(`Login failed for user ${user.username}: ${loginResponse.status}`);
     }
 
     sleep(2);

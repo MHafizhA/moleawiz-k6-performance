@@ -6,8 +6,18 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend, Counter } from 'k6/metrics';
+import { SharedArray } from 'k6/data';
 import { customHtmlReport } from "../../utils/custom-html-report.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
+
+// 1. ENVIRONMENT VARIABLES
+const BASE_URL_WEB = __ENV.BASE_URL_WEB || 'https://moleawiz-web-staging.digimasia.com';
+const BASE_URL_API = __ENV.BASE_URL_API || 'https://lbs-staging.digimasia.com/api/public/index.php';
+
+// 2. DATA DRIVEN TESTING
+const users = new SharedArray('users', function () {
+  return JSON.parse(open('../../data/users.json'));
+});
 
 // Custom Metrics
 const errorRate = new Rate('errors');
@@ -43,7 +53,7 @@ export default function() {
   // Test Flow 1: Web Access
   group('Web Application', function() {
     const webStart = Date.now();
-    const webResponse = http.get('https://moleawiz-web-staging.digimasia.com/', {
+    const webResponse = http.get(`${BASE_URL_WEB}/`, {
       tags: { test_type: 'web' },
     });
     webLoadTime.add(Date.now() - webStart);
@@ -64,14 +74,16 @@ export default function() {
 
   // Test Flow 2: Authentication
   group('Authentication', function() {
+    const user = users[Math.floor(Math.random() * users.length)];
     const loginStart = Date.now();
+
     const loginPayload = JSON.stringify({
-      email: 'hafizh@digimasia.com',
-      password: '12345'
+      email: user.username,
+      password: user.password
     });
 
     const loginResponse = http.post(
-      'https://lbs-staging.digimasia.com/api/public/index.php/login',
+      `${BASE_URL_API}/login`,
       loginPayload,
       {
         headers: {

@@ -6,8 +6,18 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Rate } from 'k6/metrics';
+import { SharedArray } from 'k6/data';
 import { customHtmlReport } from "../../utils/custom-html-report.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
+
+// 1. ENVIRONMENT VARIABLES
+const BASE_URL_WEB = __ENV.BASE_URL_WEB || 'https://moleawiz-web-staging.digimasia.com';
+const BASE_URL_API = __ENV.BASE_URL_API || 'https://lbs-staging.digimasia.com/api/public/index.php';
+
+// 2. DATA DRIVEN TESTING
+const users = new SharedArray('users', function () {
+  return JSON.parse(open('../../data/users.json'));
+});
 
 const errorRate = new Rate('errors');
 
@@ -28,7 +38,7 @@ export const options = {
 
 export default function() {
   // Web access under stress
-  const webResponse = http.get('https://moleawiz-web-staging.digimasia.com/', {
+  const webResponse = http.get(`${BASE_URL_WEB}/`, {
     timeout: '30s',
   });
 
@@ -40,11 +50,13 @@ export default function() {
   sleep(0.5);
 
   // Login under stress
+  const user = users[Math.floor(Math.random() * users.length)];
+
   const loginResponse = http.post(
-    'https://lbs-staging.digimasia.com/api/public/index.php/login',
+    `${BASE_URL_API}/login`,
     JSON.stringify({
-      email: 'hafizh@digimasia.com',
-      password: '12345'
+      email: user.username,
+      password: user.password
     }),
     {
       headers: { 'Content-Type': 'application/json' },

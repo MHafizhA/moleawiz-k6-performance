@@ -5,8 +5,18 @@
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import { SharedArray } from 'k6/data';
 import { customHtmlReport } from "../../utils/custom-html-report.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
+
+// 1. ENVIRONMENT VARIABLES
+const BASE_URL_WEB = __ENV.BASE_URL_WEB || 'https://moleawiz-web-staging.digimasia.com';
+const BASE_URL_API = __ENV.BASE_URL_API || 'https://lbs-staging.digimasia.com/api/public/index.php';
+
+// 2. DATA DRIVEN TESTING
+const users = new SharedArray('users', function () {
+  return JSON.parse(open('../../data/users.json'));
+});
 
 export const options = {
   stages: [
@@ -25,12 +35,14 @@ export const options = {
 };
 
 export default function() {
+  const user = users[Math.floor(Math.random() * users.length)];
+
   const responses = http.batch([
-    ['GET', 'https://moleawiz-web-staging.digimasia.com/'],
-    ['POST', 'https://lbs-staging.digimasia.com/api/public/index.php/login',
+    ['GET', `${BASE_URL_WEB}/`],
+    ['POST', `${BASE_URL_API}/login`,
      JSON.stringify({
-       email: 'hafizh@digimasia.com',
-       password: '12345'
+       email: user.username,
+       password: user.password
      }),
      { headers: { 'Content-Type': 'application/json' } }
     ],
