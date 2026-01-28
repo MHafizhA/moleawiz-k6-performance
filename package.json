@@ -1,0 +1,33 @@
+{
+  "name": "moleawiz-k6-perfomance-test",
+  "version": "1.0.0",
+  "description": "Plan performance testing k6 untuk web dan dashboard - Hafizh",
+  "type": "module",
+  "scripts": {
+    "test:smoke": "k6 run tests/smoke/smoke-test.js",
+    "posttest:smoke": "npm run report:smoke",
+    "test:load": "k6 run tests/load/load-test.js",
+    "posttest:load": "npm run report:load",
+    "test:stress": "k6 run tests/stress/stress-test.js",
+    "posttest:stress": "npm run report:stress",
+    "test:spike": "k6 run tests/spike/spike-test.js",
+    "posttest:spike": "npm run report:spike",
+    "test:scenario": "k6 run tests/scenario/scenario-test.js",
+    "posttest:scenario": "npm run report:scenario",
+    "test:comprehensive": "k6 run tests/scenario/comprehensive-test.js",
+    "posttest:comprehensive": "npm run report:latest",
+
+    "report:smoke": "start reports/html/smoke-test-report.html",
+    "report:load": "start reports/html/load-test-report.html",
+    "report:stress": "start reports/html/stress-test-report.html",
+    "report:spike": "start reports/html/spike-test-report.html",
+    "report:scenario": "start reports/html/scenario-test-report.html",
+    "report:latest": "start reports/html/comprehensive-test-latest.html",
+
+    "clean:reports": "rmdir /s /q reports\\html && rmdir /s /q reports\\json && mkdir reports\\html && mkdir reports\\json",
+    "clean:results": "rmdir /s /q results && mkdir results"
+  },
+  "keywords": ["k6", "performance", "testing"],
+  "author": "Hafizh",
+  "license": "Digimasia"
+}

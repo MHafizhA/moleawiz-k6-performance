@@ -1,0 +1,26 @@
+# Reports - Keep folder, ignore files
+reports/html/*.html
+reports/json/*.json
+!reports/html/.gitkeep
+!reports/json/.gitkeep
+
+# Results
+results/*
+!results/.gitkeep
+
+# Node
+node_modules/
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.log

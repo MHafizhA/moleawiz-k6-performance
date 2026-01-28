@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "lib": ["ES2020"],
+    "types": ["k6"],
+    "checkJs": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "tests/**/*.js",
+    "utils/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "results",
+    "reports"
+  ]
+}
